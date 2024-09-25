@@ -1,0 +1,26 @@
+name: App permission testing
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  create-environments:
+    if: github.event_name == 'issue_comment' &&
+      (contains(github.event.issue.labels.*.name, 'workflow-migration') ||
+      contains(github.event.issue.labels.*.name, 'gitlab-to-github')) &&
+      startsWith(github.event.comment.body, '/create-environments')
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Environment Validation
+        run: |
+          pip install -r requirements.txt
+          python3 src/env-creation-testing-app.py
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          APP_ID: ${{ secrets.APP_ID }}
+          INSTALLATION_ID: ${{ secrets.INSTALLATION_ID }}
